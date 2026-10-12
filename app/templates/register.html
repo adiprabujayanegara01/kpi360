@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block public %}
+<div class="login-form" style="min-height:100vh">
+  <form method="post" class="w-100" style="max-width:380px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h2 class="h4">Daftar akun</h2>
+    {% with msgs = get_flashed_messages(with_categories=true) %}{% for c, m in msgs %}<div class="alert alert-{{ c }}">{{ m }}</div>{% endfor %}{% endwith %}
+    <div class="mb-3"><label class="form-label">Username</label><input name="username" class="form-control" required></div>
+    <div class="mb-3"><label class="form-label">Email</label><input name="email" type="email" class="form-control" required></div>
+    <div class="mb-3"><label class="form-label">Password</label><input name="password" type="password" class="form-control" required><div class="form-text">Min. 8 karakter, huruf besar, kecil, dan angka.</div></div>
+    <button class="btn btn-primary w-100">Daftar</button>
+  </form>
+</div>
+{% endblock %}

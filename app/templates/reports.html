@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><div><h1>Laporan</h1><div class="sub">Laporan dibuat di latar belakang; Anda akan menerima notifikasi saat siap.</div></div></div>
+<div class="row g-3"><div class="col-lg-5"><form method="post" class="panel"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><h2>Buat laporan</h2>
+<div class="mb-2"><label class="form-label">Jenis</label><select name="report_type" class="form-select">
+<option value="employee">Kinerja karyawan (PDF/CSV)</option>{% if current_user.role != 'EMPLOYEE' %}<option value="department">{{ 'Kinerja departemen' if current_user.role == 'ADMIN' else 'Kinerja tim' }} (PDF/Excel)</option>{% endif %}{% if current_user.role == 'ADMIN' %}<option value="management">Manajemen (PDF/Excel)</option>{% endif %}</select></div>
+<div class="mb-2"><label class="form-label">Format</label><select name="fmt" class="form-select"><option value="pdf">PDF</option><option value="csv">CSV (karyawan)</option><option value="xlsx">Excel (departemen/manajemen)</option></select></div>
+<div class="mb-2"><label class="form-label">Periode</label><select name="period_id" class="form-select">{% for p in periods %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></div>
+{% if emps %}<div class="mb-2"><label class="form-label">Karyawan (laporan karyawan)</label><select name="employee_id" class="form-select">{% for e in emps %}<option value="{{ e.id }}">{{ e.name }}</option>{% endfor %}</select></div>{% endif %}
+{% if current_user.role == 'ADMIN' %}<div class="mb-3"><label class="form-label">Departemen (laporan departemen)</label><select name="department_id" class="form-select"><option value="">Semua</option>{% for d in depts %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select></div>{% endif %}
+<button class="btn btn-primary">Buat laporan</button></form></div>
+<div class="col-lg-7"><div class="panel p-0 table-responsive"><table class="table mb-0 align-middle"><thead><tr><th>#</th><th>Jenis</th><th>Format</th><th>Status</th><th>Dibuat</th><th></th></tr></thead><tbody>
+{% for j in jobs %}<tr><td>{{ j.id }}</td><td>{{ j.report_type }}</td><td>{{ j.fmt|upper }}</td><td>{{ j.status|badge }}{% if j.error %}<div class="small text-danger">{{ j.error }}</div>{% endif %}</td><td>{{ j.created_at|dt('%d %b %H:%M') }}</td>
+<td class="text-end">{% if j.status == 'DONE' %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('perf.report_download', jid=j.id) }}">Unduh</a>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6"><div class="empty">Belum ada laporan.</div></td></tr>{% endfor %}</tbody></table></div></div></div>
+{% endblock %}

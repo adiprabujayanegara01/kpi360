@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><h1>{{ 'Karyawan' if current_user.role == 'ADMIN' else 'Anggota tim' }}</h1>
+  {% if current_user.role == 'ADMIN' %}<div class="acts"><a class="btn btn-primary btn-sm" href="{{ url_for('master.employee_form') }}">Tambah karyawan</a></div>{% endif %}</div>
+<form class="filters" method="get">
+  <div><label>Cari</label><input class="form-control form-control-sm" name="q" value="{{ args.q or '' }}" placeholder="Nama / nomor"></div>
+  <div><label>Departemen</label><select name="department_id" class="form-select form-select-sm"><option value="">Semua</option>{% for d in depts %}<option value="{{ d.id }}" {{ 'selected' if args.department_id|string == d.id|string }}>{{ d.name }}</option>{% endfor %}</select></div>
+  <div><label>Jabatan</label><select name="position_id" class="form-select form-select-sm"><option value="">Semua</option>{% for p in poss %}<option value="{{ p.id }}" {{ 'selected' if args.position_id|string == p.id|string }}>{{ p.name }}</option>{% endfor %}</select></div>
+  <button class="btn btn-sm btn-outline-primary">Filter</button></form>
+<div class="panel p-0 table-responsive"><table class="table table-hover mb-0"><thead><tr><th>No.</th><th>Nama</th><th>Departemen</th><th>Jabatan</th><th>Atasan</th><th>Status</th><th></th></tr></thead><tbody>
+{% for e in pg.items %}<tr><td>{{ e.employee_number }}</td><td><a href="{{ url_for('master.employee_detail', id=e.id) }}">{{ e.name }}</a></td><td>{{ e.department.name if e.department }}</td><td>{{ e.position.name if e.position }}</td><td>{{ e.supervisor.name if e.supervisor else '-' }}</td><td>{{ e.status|badge }}</td>
+<td class="text-end">{% if current_user.role == 'ADMIN' %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('master.employee_edit', id=e.id) }}">Ubah</a>{% endif %}</td></tr>
+{% else %}<tr><td colspan="7"><div class="empty">Tidak ada karyawan yang cocok.</div></td></tr>{% endfor %}</tbody></table></div>
+{{ m.pager(pg, 'master.employees', args) }}
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><h1>{{ title }}</h1></div>
+<form method="post" class="panel" style="max-width:720px" autocomplete="off">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% for k, v in (hidden or {}).items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+  {% for f in fields %}
+    {% set v = values.get(f.name) %}
+    {% if f.type == 'checkbox' %}
+      <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="f_{{ f.name }}" name="{{ f.name }}" value="1" {{ 'checked' if v }}><label class="form-check-label" for="f_{{ f.name }}">{{ f.label }}</label></div>
+    {% else %}
+      <div class="mb-3"><label class="form-label" for="f_{{ f.name }}">{{ f.label }}{% if f.required %} *{% endif %}</label>
+      {% if f.type == 'select' %}
+        <select class="form-select" id="f_{{ f.name }}" name="{{ f.name }}">{% for val, lab in f.options %}<option value="{{ val }}" {{ 'selected' if (v|string) == (val|string) }}>{{ lab }}</option>{% endfor %}</select>
+      {% elif f.type == 'textarea' %}
+        <textarea class="form-control" rows="4" id="f_{{ f.name }}" name="{{ f.name }}" {{ 'required' if f.required }}>{{ v or '' }}</textarea>
+      {% elif f.type == 'number' %}
+        <input class="form-control" type="text" inputmode="decimal" id="f_{{ f.name }}" name="{{ f.name }}" value="{{ v|num if v not in (None, '') and v is not string else (v or '') }}" {{ 'required' if f.required }}>
+      {% elif f.type == 'date' %}
+        <input class="form-control" type="date" id="f_{{ f.name }}" name="{{ f.name }}" value="{{ v.isoformat() if v and v is not string else (v or '') }}" {{ 'required' if f.required }}>
+      {% elif f.type == 'password' %}
+        <input class="form-control" type="password" autocomplete="new-password" id="f_{{ f.name }}" name="{{ f.name }}" {{ 'required' if f.required }}>
+      {% else %}
+        <input class="form-control" type="text" id="f_{{ f.name }}" name="{{ f.name }}" value="{{ v or '' }}" {{ 'required' if f.required }}>
+      {% endif %}
+      {% if f.help %}<div class="form-text">{{ f.help }}</div>{% endif %}</div>
+    {% endif %}
+  {% endfor %}
+  <div class="d-flex gap-2"><button class="btn btn-primary">Simpan</button><a class="btn btn-outline-secondary" href="{{ back }}">Batal</a></div>
+</form>
+{% endblock %}

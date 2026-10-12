@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><div><h1>{{ a.kpi_name_snapshot }}</h1><div class="sub">{{ emp.name }} · {{ a.period.name }} · {{ r.status|badge }}</div></div><div class="acts"><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('cycle.verifications') }}">Kembali</a></div></div>
+<div class="row g-3"><div class="col-lg-6"><div class="panel"><h2>Data realisasi</h2><dl class="row mb-0">
+<dt class="col-5">Tipe KPI</dt><dd class="col-7">{{ a.measurement_type_snapshot }}</dd><dt class="col-5">Target</dt><dd class="col-7">{{ a.target|num }} {{ a.unit_snapshot or '' }}</dd>
+<dt class="col-5">Realisasi</dt><dd class="col-7"><b>{{ r.realization_value|num }}</b> {{ a.unit_snapshot or '' }}</dd><dt class="col-5">Bobot</dt><dd class="col-7">{{ a.weight|num }}%</dd>
+<dt class="col-5">Versi kiriman</dt><dd class="col-7">{{ r.version }}</dd><dt class="col-5">Deskripsi</dt><dd class="col-7">{{ r.description or '-' }}</dd>
+<dt class="col-5">Bukti</dt><dd class="col-7">{% for e in r.evidence %}<div><a href="{{ url_for('main.evidence', eid=e.id) }}">{{ e.original_name }}</a></div>{% else %}<span class="text-secondary">Tidak ada{% if a.evidence_required_snapshot %} (seharusnya wajib){% endif %}</span>{% endfor %}</dd></dl></div></div>
+<div class="col-lg-6"><div class="panel"><h2>Keputusan</h2>
+{% if own %}<div class="alert alert-warning">Anda tidak dapat memverifikasi realisasi milik sendiri (BR-05).</div>
+{% elif r.status == 'SUBMITTED' %}<form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="mb-3"><label class="form-label" for="c">Komentar {% if current_user.role == 'ADMIN' %}(wajib untuk override HR){% else %}(wajib bila menolak/meminta revisi){% endif %}</label><textarea class="form-control" id="c" name="comment" rows="3"></textarea></div>
+<div class="d-flex flex-wrap gap-2"><button class="btn btn-success" name="decision" value="approve">Setujui</button><button class="btn btn-warning" name="decision" value="revision">Minta revisi</button><button class="btn btn-danger" name="decision" value="reject">Tolak</button></div></form>
+{% else %}<div class="text-secondary">Sudah diputuskan.</div>{% endif %}
+{% if r.verifications %}<hr><h3 class="h6">Riwayat</h3>{% for v in r.verifications %}<div class="py-1 border-bottom">{{ v.decision|badge }} {{ v.verifier.display_name }}{% if v.is_override %} <span class="badge text-bg-dark">override HR</span>{% endif %}<div class="small">{{ v.comment or '' }}</div></div>{% endfor %}{% endif %}</div></div></div>
+{% endblock %}

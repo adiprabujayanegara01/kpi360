@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><div><h1>Halo, {{ current_user.display_name.split(' ')[0] }}</h1><div class="sub">{% if cur %}Skor terakhir: {{ cur.period }}{% else %}Belum ada skor{% endif %}</div></div>
+  {% if running %}<div class="acts"><a class="btn btn-primary" href="{{ url_for('cycle.my_kpi') }}">Isi realisasi {{ running.name }}</a></div>{% endif %}</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-4"><div class="panel d-flex align-items-center gap-4">
+    {% if cur %}<div class="ring" style="--p:{{ cur.score }};--c:{{ cat_colors.get(cur.category, '#1F6FB2') }}"><div><span><b>{{ cur.score|n2(1) }}</b><small>dari 100</small></span></div></div>
+    <div><div class="text-secondary small">Kategori</div>{{ cat_badge(cur.category) }}<div class="text-secondary small mt-3">Rata-rata achievement</div><b>{{ avg_ach|n2(1) }}%</b></div>
+    {% else %}<div class="empty w-100">Skor muncul setelah realisasi Anda disetujui dan periode dihitung.</div>{% endif %}</div></div>
+  <div class="col-6 col-lg-2">{{ m.stat('KPI selesai', kpi_done ~ ' / ' ~ kpi_total, 'disetujui supervisor') }}</div>
+  <div class="col-6 col-lg-6"><div class="panel h-100"><h2>Status realisasi{% if running %} · {{ running.name }}{% endif %}</h2>
+    {% for st, n in status_counts.items() %}<span class="me-3">{{ st|badge }} <b>{{ n }}</b></span>{% else %}<div class="empty">Belum ada KPI yang ditugaskan.</div>{% endfor %}</div></div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-7"><div class="panel"><h2>Tren skor dibanding rata-rata departemen</h2>
+    {% if hist %}{{ m.chart({'type':'line','data':{'labels':hist|map(attribute='period')|list,'datasets':[{'label':'Skor saya','data':hist|map(attribute='score')|list,'borderColor':'#1F6FB2','backgroundColor':'#1F6FB2','tension':0.3},{'label':'Rata-rata departemen','data':hist|map(attribute='dept_avg')|list,'borderColor':'#8794a3','borderDash':[5,4],'pointRadius':0,'tension':0.3}]},'options':{'scales':{'y':{'suggestedMin':50,'suggestedMax':100} }} }) }}{% else %}<div class="empty">Belum ada riwayat.</div>{% endif %}</div></div>
+  <div class="col-lg-5"><div class="panel h-100"><h2>Rekomendasi peningkatan {% if rec_src %}<span class="ai-label">({{ rec_src }}, perlu ditinjau manusia)</span>{% endif %}</h2>
+    {% if recs %}<ol class="mb-0">{% for r in recs %}<li>{{ r }}</li>{% endfor %}</ol>{% else %}<div class="empty">Rekomendasi tersedia setelah ada skor.</div>{% endif %}</div></div>
+</div>
+<div class="panel"><h2>Feedback terbaru</h2>{% if fb %}<p class="mb-1">{{ fb.comment }}</p>{% if fb.development_plan %}<p class="text-secondary mb-1">Rencana: {{ fb.development_plan }}</p>{% endif %}<div class="small text-secondary">{{ fb.evaluator.display_name }} · {{ fb.period.name }}</div>{% else %}<div class="empty">Belum ada feedback.</div>{% endif %}</div>
+{% endblock %}

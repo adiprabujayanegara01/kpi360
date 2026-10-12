@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><h1>Verifikasi realisasi</h1><div class="acts">
+{% for s, l in [('SUBMITTED','Menunggu'),('APPROVED','Disetujui'),('CALCULATED','Terhitung'),('REJECTED','Ditolak'),('REVISION_REQUIRED','Perlu revisi')] %}<a class="btn btn-sm {{ 'btn-primary' if status == s else 'btn-outline-secondary' }}" href="{{ url_for('cycle.verifications', status=s) }}">{{ l }}</a>{% endfor %}</div></div>
+<div class="panel p-0 table-responsive"><table class="table table-hover mb-0 align-middle"><thead><tr><th>Karyawan</th><th>KPI</th><th>Periode</th><th class="num">Target</th><th class="num">Realisasi</th><th>Bukti</th><th>Dikirim</th><th></th></tr></thead><tbody>
+{% for r in rows %}{% set a = r.assignment %}<tr><td>{{ a.employee.name }}</td><td>{{ a.kpi_name_snapshot }}</td><td>{{ a.period.name }}</td><td class="num">{{ a.target|num }}</td><td class="num">{{ r.realization_value|num }}</td><td>{{ r.evidence|length }} file</td><td>{{ r.submitted_at|dt('%d %b %H:%M') }}</td>
+<td class="text-end"><a class="btn btn-sm btn-primary" href="{{ url_for('cycle.verification_review', rid=r.id) }}">{{ 'Tinjau' if status == 'SUBMITTED' else 'Lihat' }}</a></td></tr>
+{% else %}<tr><td colspan="8"><div class="empty">{{ 'Tidak ada realisasi yang menunggu verifikasi.' if status == 'SUBMITTED' else 'Tidak ada data.' }}</div></td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

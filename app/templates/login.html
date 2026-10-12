@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block public %}
+<div class="login-wrap">
+  <section class="login-hero">
+    <h1>KPI360</h1>
+    <p class="fs-5" style="max-width:34ch">Satu tempat untuk target, realisasi, verifikasi, dan skor kinerja karyawan.</p>
+    <p class="opacity-75" style="max-width:46ch">Skor dihitung otomatis dan dapat diaudit. AI membantu membaca tren, tetapi keputusan tetap di tangan manusia.</p>
+  </section>
+  <section class="login-form">
+    <form method="post" class="w-100" style="max-width:360px" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h2 class="h4 mb-3">Masuk</h2>
+      {% with msgs = get_flashed_messages(with_categories=true) %}{% for c, m in msgs %}<div class="alert alert-{{ c if c in ['success','danger','warning','info'] else 'info' }}">{{ m }}</div>{% endfor %}{% endwith %}
+      <div class="mb-3"><label class="form-label" for="u">Username</label><input id="u" name="username" class="form-control" autocomplete="username" required autofocus></div>
+      <div class="mb-3"><label class="form-label" for="p">Password</label><input id="p" name="password" type="password" class="form-control" autocomplete="current-password" required></div>
+      <button class="btn btn-primary w-100">Masuk</button>
+      <div class="mt-3 small d-flex justify-content-between"><a href="{{ url_for('auth.forgot_password') }}">Lupa password?</a>
+        {% if config.REGISTRATION_ENABLED %}<a href="{{ url_for('auth.register') }}">Daftar</a>{% endif %}</div>
+    </form>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><div><h1>Audit log</h1><div class="sub">Append-only · hanya dapat dibaca HR</div></div></div>
+<form class="filters" method="get"><div><label>Aksi</label><input class="form-control form-control-sm" name="action" value="{{ args.action or '' }}"></div><div><label>Pengguna</label><input class="form-control form-control-sm" name="username" value="{{ args.username or '' }}"></div><button class="btn btn-sm btn-outline-primary">Filter</button></form>
+<div class="panel p-0 table-responsive"><table class="table table-sm mb-0 align-middle"><thead><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Objek</th><th>Perubahan</th><th>IP</th></tr></thead><tbody>
+{% for a in pg.items %}<tr><td class="text-nowrap">{{ a.created_at|dt('%d %b %Y %H:%M:%S') }}</td><td>{{ a.username }}</td><td><code>{{ a.action }}</code></td><td>{{ a.entity_type }}{{ '/' ~ a.entity_id if a.entity_id }}</td>
+<td class="small" style="max-width:420px;word-break:break-word">{% if a.old_value %}<span class="text-secondary">dari</span> {{ a.old_value|tojson }}<br>{% endif %}{% if a.new_value %}<span class="text-secondary">menjadi</span> {{ a.new_value|tojson }}{% endif %}</td><td>{{ a.ip_address or '-' }}</td></tr>
+{% else %}<tr><td colspan="6"><div class="empty">Tidak ada catatan.</div></td></tr>{% endfor %}</tbody></table></div>
+{{ m.pager(pg, 'main.audit_logs', args) }}
+{% endblock %}

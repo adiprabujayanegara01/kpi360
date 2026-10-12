@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><h1>Pengaturan sistem</h1></div>
+<div class="row g-3"><div class="col-lg-6"><form method="post" class="panel"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><h2>Aturan early warning</h2>
+{% for k, l in [('ew_drop_points','EW-02: penurunan skor (poin) → HIGH'),('ew_low_score','EW-03: skor di bawah → HIGH'),('ew_kpi_low_pct','EW-04: KPI di bawah (%) 2 periode → MEDIUM'),('ew_reject_count','EW-06: jumlah penolakan berulang → LOW'),('default_cap','Cap achievement default (%)')] %}
+<div class="mb-2"><label class="form-label">{{ l }}</label><input class="form-control" name="{{ k }}" value="{{ s[k] }}"></div>{% endfor %}
+<p class="small text-secondary">EW-01 (turun 3 periode) dan EW-05 (turun 2 periode) bersifat tetap.</p><button class="btn btn-primary">Simpan</button></form></div>
+<div class="col-lg-6"><div class="panel"><h2>Kategori performa</h2><table class="table table-sm"><thead><tr><th>Kategori</th><th class="num">Min</th><th class="num">Maks</th><th>Warna</th><th></th></tr></thead><tbody>
+{% for c in cats %}<tr><td>{{ cat_badge(c.name) }}</td><td class="num">{{ c.min_score|num }}</td><td class="num">{{ c.max_score|num }}</td><td>{{ c.color }}</td><td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('master.score-categories_edit', id=c.id) }}">Ubah</a></td></tr>{% endfor %}</tbody></table>
+<p class="small text-secondary mb-0">Batas kategori dapat diubah tanpa mengubah kode. Skor yang sudah final tidak berubah.</p></div></div></div>
+{% endblock %}

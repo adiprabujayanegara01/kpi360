@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><div><h1>Penugasan KPI</h1><div class="sub">Target dan bobot per karyawan per periode. Total bobot harus 100%.</div></div></div>
+{{ m.period_filter(periods, period, {'department_id': args.department_id}) }}
+{% if period %}
+{% if period.status == 'DRAFT' %}
+<div class="panel mb-3"><h2>Penugasan massal ({{ period.name }})</h2>
+<form method="post" action="{{ url_for('cycle.assignments_bulk') }}" class="row g-2 align-items-end"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="period_id" value="{{ period.id }}"><input type="hidden" name="mode" value="template">
+<div class="col-md-4"><label class="form-label">Departemen</label><select name="department_id" class="form-select"><option value="">Semua</option>{% for d in depts %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select></div>
+<div class="col-md-4"><label class="form-label">Jabatan</label><select name="position_id" class="form-select"><option value="">Semua</option>{% for p in poss %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></div>
+<div class="col-md-4"><button class="btn btn-primary w-100">Isi dari template jabatan</button></div></form>
+<hr><form method="post" action="{{ url_for('cycle.assignments_bulk') }}" class="row g-2 align-items-end"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="period_id" value="{{ period.id }}"><input type="hidden" name="mode" value="copy">
+<div class="col-md-8"><label class="form-label">Salin dari periode lalu</label><select name="source_period_id" class="form-select">{% for p in periods if p.id != period.id %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></div>
+<div class="col-md-4"><button class="btn btn-outline-primary w-100">Salin penugasan</button></div></form></div>{% endif %}
+{% if problems %}<div class="alert alert-warning">{{ problems|length }} karyawan belum memiliki total bobot 100% — periode tidak dapat dipublish (BR-01).</div>{% endif %}
+<div class="panel p-0 table-responsive"><table class="table mb-0"><thead><tr><th>Karyawan</th><th>Departemen</th><th class="num">Jumlah KPI</th><th class="num">Total bobot</th><th></th></tr></thead><tbody>
+{% for e, n, w in rows %}<tr><td>{{ e.name }}</td><td>{{ e.department.name if e.department }}</td><td class="num">{{ n }}</td><td class="num {{ 'text-danger fw-semibold' if e.id in problems else '' }}">{{ w|num }}%</td>
+<td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('cycle.assignment_edit', period_id=period.id, employee_id=e.id) }}">Atur target & bobot</a></td></tr>
+{% else %}<tr><td colspan="5"><div class="empty">Belum ada penugasan pada periode ini. Gunakan penugasan massal di atas.</div></td></tr>{% endfor %}</tbody></table></div>
+{% endif %}
+{% endblock %}

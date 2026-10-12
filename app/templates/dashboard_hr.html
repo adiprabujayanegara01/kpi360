@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><div><h1>Dashboard HR</h1><div class="sub">Ringkasan kinerja organisasi{% if period %} · {{ period.name }}{% endif %}</div></div>
+  <div class="acts">{{ m.period_filter(periods, period) }}</div></div>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3">{{ m.stat('Karyawan aktif', n_emp, n_dept ~ ' departemen') }}</div>
+  <div class="col-6 col-lg-3">{{ m.stat('Rata-rata skor', cards.avg|n2, cards.count ~ ' karyawan bersekor') }}</div>
+  <div class="col-6 col-lg-3">{{ m.stat('Top performer', (cards.top.score|n2) if cards.top else '-', cards.top.employee if cards.top else 'Belum ada skor') }}</div>
+  <div class="col-6 col-lg-3">{{ m.stat('Menunggu verifikasi', pending, 'realisasi berstatus Submitted') }}</div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-7"><div class="panel"><h2>Tren rata-rata skor organisasi</h2>
+    {% if trend %}{{ m.chart({'type':'line','data':{'labels':trend|map(attribute='period')|list,'datasets':[{'label':'Rata-rata skor','data':trend|map(attribute='avg')|list,'borderColor':'#1F6FB2','backgroundColor':'#1F6FB2','tension':0.3}]},'options':{'scales':{'y':{'suggestedMin':50,'suggestedMax':100} },'plugins':{'legend':{'display':False} }} }) }}{% else %}<div class="empty">Belum ada skor. Tutup dan hitung periode untuk melihat tren.</div>{% endif %}</div></div>
+  <div class="col-lg-5"><div class="panel"><h2>Distribusi kategori</h2>
+    {% if dist|sum(attribute='count') %}{{ m.chart({'type':'doughnut','data':{'labels':dist|map(attribute='category')|list,'datasets':[{'data':dist|map(attribute='count')|list,'backgroundColor':dist|map(attribute='color')|list}]},'options':{'plugins':{'legend':{'position':'right'} }} }) }}{% else %}<div class="empty">Belum ada data.</div>{% endif %}</div></div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-6"><div class="panel"><h2>Rata-rata skor per departemen</h2>
+    {% if dept %}{{ m.chart({'type':'bar','data':{'labels':dept|map(attribute='department')|list,'datasets':[{'data':dept|map(attribute='avg')|list,'backgroundColor':'#1F6FB2'}]},'options':{'scales':{'y':{'min':0,'max':100} },'plugins':{'legend':{'display':False} }} }) }}{% else %}<div class="empty">Belum ada data.</div>{% endif %}</div></div>
+  <div class="col-lg-6"><div class="panel"><h2>KPI paling sering tidak tercapai</h2>
+    {% if kpis %}{{ m.chart({'type':'bar','data':{'labels':kpis|map(attribute='kpi')|list,'datasets':[{'label':'% tidak tercapai','data':kpis|map(attribute='unmet_pct')|list,'backgroundColor':'#E08A00'}]},'options':{'indexAxis':'y','scales':{'x':{'min':0,'max':100} },'plugins':{'legend':{'display':False} }} }) }}{% else %}<div class="empty">Belum ada data.</div>{% endif %}</div></div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-6"><div class="panel"><h2>Karyawan perlu perhatian</h2>
+    {% for w in warnings %}<div class="d-flex gap-2 py-1 border-bottom"><span class="risk-{{ w.level }}">{{ w.level }}</span><a href="{{ url_for('perf.performance_detail', employee_id=w.employee_id) }}">{{ w.employee.name }}</a><span class="text-secondary small">{{ w.message }}</span></div>
+    {% else %}<div class="empty">Tidak ada peringatan dini pada periode ini.</div>{% endfor %}</div></div>
+  <div class="col-lg-6"><div class="panel"><h2>Siklus periode</h2>
+    {% for p in open_periods %}<div class="d-flex justify-content-between py-1 border-bottom"><span>{{ p.name }}</span>{{ p.status|badge }}</div>
+    {% else %}<div class="empty">Semua periode sudah final. <a href="{{ url_for('cycle.period_form') }}">Buat periode baru</a>.</div>{% endfor %}</div></div>
+</div>
+{% endblock %}

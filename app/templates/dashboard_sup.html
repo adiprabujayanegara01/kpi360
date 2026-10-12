@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><div><h1>Dashboard supervisor</h1><div class="sub">Kinerja tim{% if period %} · {{ period.name }}{% endif %}</div></div>
+  <div class="acts">{{ m.period_filter(periods, period) }}</div></div>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3">{{ m.stat('Anggota tim', n_team) }}</div>
+  <div class="col-6 col-lg-3">{{ m.stat('Rata-rata skor tim', cards.avg|n2, cards.count ~ ' bersekor') }}</div>
+  <div class="col-6 col-lg-3">{{ m.stat('Top performer', (cards.top.score|n2) if cards.top else '-', cards.top.employee if cards.top else '') }}</div>
+  <div class="col-6 col-lg-3"><a class="text-decoration-none text-reset" href="{{ url_for('cycle.verifications') }}">{{ m.stat('Antrean verifikasi', queue, 'klik untuk meninjau') }}</a></div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-7"><div class="panel"><h2>Skor anggota tim</h2>
+    {% if ranking %}{{ m.chart({'type':'bar','data':{'labels':ranking|map(attribute='employee')|list,'datasets':[{'data':ranking|map(attribute='score')|list,'backgroundColor':'#1F6FB2'}]},'options':{'scales':{'y':{'min':0,'max':100} },'plugins':{'legend':{'display':False} }} }) }}{% else %}<div class="empty">Belum ada skor tim pada periode ini.</div>{% endif %}</div></div>
+  <div class="col-lg-5"><div class="panel"><h2>KPI belum tercapai</h2>
+    {% for k in kpis %}<div class="mb-2"><div class="d-flex justify-content-between small"><span>{{ k.kpi }}</span><span>{{ k.unmet }}/{{ k.n }}</span></div>{{ m.bar(100 - k.unmet_pct, 'warn') }}</div>
+    {% else %}<div class="empty">Belum ada data.</div>{% endfor %}</div></div>
+</div>
+<div class="row g-3"><div class="col-lg-6"><div class="panel"><h2>Peringatan dini tim</h2>
+  {% for w in warnings %}<div class="d-flex gap-2 py-1 border-bottom"><span class="risk-{{ w.level }}">{{ w.level }}</span><a href="{{ url_for('perf.performance_detail', employee_id=w.employee_id) }}">{{ w.employee.name }}</a><span class="text-secondary small">{{ w.message }}</span></div>
+  {% else %}<div class="empty">Tidak ada peringatan.</div>{% endfor %}</div></div>
+  <div class="col-lg-6"><div class="panel"><h2>Peringkat tim</h2><table class="table table-sm"><tbody>
+  {% for r in ranking %}<tr><td>{{ r.rank }}</td><td><a href="{{ url_for('perf.performance_detail', employee_id=r.employee_id) }}">{{ r.employee }}</a></td><td class="num">{{ r.score|n2 }}</td><td>{{ cat_badge(r.category) }}</td></tr>
+  {% else %}<tr><td><div class="empty">Belum ada data.</div></td></tr>{% endfor %}</tbody></table>
+  <div class="small text-secondary">Perbandingan antar jabatan berbeda perlu dibaca dengan hati-hati.</div></div></div></div>
+{% endblock %}

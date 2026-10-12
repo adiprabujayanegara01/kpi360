@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><h1>{{ title }}</h1>
+  <div class="acts">{% if can_create %}<a class="btn btn-primary btn-sm" href="{{ url_for('master.' ~ key ~ '_create') }}">Tambah</a>{% endif %}</div></div>
+<div class="panel p-0 table-responsive">
+  <table class="table table-hover align-middle mb-0"><thead><tr>{% for c in columns %}<th>{{ c }}</th>{% endfor %}<th></th></tr></thead><tbody>
+  {% for r in rows %}<tr>
+    {% for cell in r.cells %}<td>{% if cell in ('ACTIVE','INACTIVE') %}{{ cell|badge }}{% elif cell is number %}{{ cell|num }}{% elif cell is none %}-{% else %}{{ cell }}{% endif %}</td>{% endfor %}
+    <td class="text-end text-nowrap">
+      {% for label, ep in extra %}<a class="btn btn-sm btn-outline-secondary" href="{{ url_for(ep, id=r.id) }}">{{ label }}</a>{% endfor %}
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('master.' ~ key ~ '_edit', id=r.id) }}">Ubah</a>
+      {% if can_delete %}<form class="d-inline" method="post" action="{{ url_for('master.' ~ key ~ '_delete', id=r.id) }}" data-confirm="Nonaktifkan/hapus data ini?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger">Hapus</button></form>{% endif %}
+    </td></tr>
+  {% else %}<tr><td colspan="{{ columns|length + 1 }}"><div class="empty">Belum ada data. Klik “Tambah” untuk membuat yang pertama.</div></td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}

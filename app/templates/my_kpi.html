@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><div><h1>KPI saya</h1><div class="sub">{% if period %}{{ period.name }} · {{ period.status|badge }} · batas input {{ period.input_deadline|dt }}{% endif %}</div></div></div>
+{% if periods %}{{ m.period_filter(periods, period) }}{% endif %}
+{% if period and period.status == 'RUNNING' and not can_input %}<div class="alert alert-warning">Batas input realisasi sudah lewat.</div>{% endif %}
+<div class="panel p-0 table-responsive"><table class="table mb-0 align-middle"><thead><tr><th>KPI</th><th>Kategori</th><th class="num">Target</th><th class="num">Bobot</th><th class="num">Realisasi</th><th class="num">Achievement</th><th>Status</th><th></th></tr></thead><tbody>
+{% for a in items %}{% set r = a.realization %}{% set st = r.status if r else 'BELUM DIINPUT' %}<tr>
+<td>{{ a.kpi_name_snapshot }}{% if a.evidence_required_snapshot %} <span class="badge text-bg-light border" title="Bukti wajib">bukti wajib</span>{% endif %}
+{% if r and r.verifications and r.verifications[-1].comment and st in ('REJECTED','REVISION_REQUIRED') %}<div class="small text-danger">Catatan atasan: {{ r.verifications[-1].comment }}</div>{% endif %}</td>
+<td>{{ a.category_snapshot }}</td><td class="num">{{ a.target|num }} {{ a.unit_snapshot or '' }}</td><td class="num">{{ a.weight|num }}%</td>
+<td class="num">{{ r.realization_value|num if r and r.realization_value is not none else '-' }}</td>
+<td class="num">{{ r.achievement|n2 if r and r.achievement is not none else '-' }}</td><td>{{ st|badge }}</td>
+<td class="text-end"><a class="btn btn-sm {{ 'btn-primary' if can_input and (not r or r.status in editable) else 'btn-outline-secondary' }}" href="{{ url_for('cycle.realization', assignment_id=a.id) }}">{{ 'Isi realisasi' if can_input and (not r or r.status in editable) else 'Lihat' }}</a></td></tr>
+{% else %}<tr><td colspan="8"><div class="empty">Belum ada KPI yang ditugaskan pada periode ini.</div></td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

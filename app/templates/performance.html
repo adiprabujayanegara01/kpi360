@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><div><h1>Skor & peringkat</h1><div class="sub">{{ period.name if period }} · {{ cards.count }} karyawan{% if cards.avg %} · rata-rata {{ cards.avg|n2 }}{% endif %}</div></div></div>
+<form method="get" class="filters">
+<div><label>Periode</label><select name="period_id" class="form-select form-select-sm">{% for p in periods %}<option value="{{ p.id }}" {{ 'selected' if period and p.id == period.id }}>{{ p.name }}</option>{% endfor %}</select></div>
+{% if current_user.role == 'ADMIN' %}<div><label>Departemen</label><select name="department_id" class="form-select form-select-sm"><option value="">Semua</option>{% for d in depts %}<option value="{{ d.id }}" {{ 'selected' if args.department_id|string == d.id|string }}>{{ d.name }}</option>{% endfor %}</select></div>{% endif %}
+<div><label>Jabatan</label><select name="position_id" class="form-select form-select-sm"><option value="">Semua</option>{% for p in poss %}<option value="{{ p.id }}" {{ 'selected' if args.position_id|string == p.id|string }}>{{ p.name }}</option>{% endfor %}</select></div>
+<div><label>Kategori</label><select name="category" class="form-select form-select-sm"><option value="">Semua</option>{% for c in cats %}<option {{ 'selected' if args.category == c.name }}>{{ c.name }}</option>{% endfor %}</select></div>
+<div><label>Skor min</label><input name="min_score" class="form-control form-control-sm" style="width:90px" value="{{ args.min_score or '' }}"></div>
+<div><label>Skor maks</label><input name="max_score" class="form-control form-control-sm" style="width:90px" value="{{ args.max_score or '' }}"></div>
+<button class="btn btn-sm btn-primary">Terapkan</button></form>
+<div class="alert alert-light border small">Perbandingan antar jabatan yang berbeda harus dibaca dengan hati-hati: target dan bobot KPI tiap jabatan tidak sama.</div>
+<div class="panel p-0 table-responsive"><table class="table table-hover mb-0 align-middle"><thead><tr><th>#</th><th>Karyawan</th><th>Departemen</th><th>Jabatan</th><th class="num">Skor</th><th>Kategori</th><th class="num">Incomplete</th><th>Status</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.rank }}</td><td><a href="{{ url_for('perf.performance_detail', employee_id=r.employee_id, period_id=r.period_id) }}">{{ r.employee }}</a></td><td>{{ r.department or '-' }}</td><td>{{ r.position or '-' }}</td><td class="num"><b>{{ r.score|n2 }}</b></td><td>{{ cat_badge(r.category) }}</td><td class="num">{{ r.incomplete }}</td><td>{{ r.status|badge }}</td></tr>
+{% else %}<tr><td colspan="8"><div class="empty">Tidak ada skor yang cocok dengan filter.</div></td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

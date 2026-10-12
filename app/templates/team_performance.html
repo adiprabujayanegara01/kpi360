@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><div><h1>Kinerja tim</h1><div class="sub">{{ period.name if period }}</div></div></div>
+{{ m.period_filter(periods, period) }}
+<div class="row g-3 mb-3"><div class="col-lg-7"><div class="panel p-0 table-responsive"><table class="table mb-0 align-middle"><thead><tr><th>#</th><th>Anggota</th><th class="num">Skor</th><th>Kategori</th><th>Peringatan</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.rank }}</td><td><a href="{{ url_for('perf.performance_detail', employee_id=r.employee_id, period_id=r.period_id) }}">{{ r.employee }}</a></td><td class="num">{{ r.score|n2 }}</td><td>{{ cat_badge(r.category) }}</td>
+<td>{% for w in warn.get(r.employee_id, []) %}<span class="risk-{{ w.level }} me-1" title="{{ w.message }}">{{ w.rule }}</span>{% else %}<span class="text-secondary">-</span>{% endfor %}</td></tr>
+{% else %}<tr><td colspan="5"><div class="empty">Belum ada skor tim.</div></td></tr>{% endfor %}</tbody></table></div></div>
+<div class="col-lg-5"><div class="panel"><h2>KPI belum tercapai</h2>{% for k in kpis %}<div class="mb-2"><div class="d-flex justify-content-between small"><span>{{ k.kpi }}</span><span>{{ k.unmet }}/{{ k.n }}</span></div>{{ m.bar(100 - k.unmet_pct, 'warn') }}</div>{% else %}<div class="empty">Belum ada data.</div>{% endfor %}</div></div></div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><div><h1>{{ emp.name }}</h1><div class="sub">{{ period.name }} · {{ period.status|badge }} · {{ emp.position.name if emp.position }}</div></div>
+<div class="acts"><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('cycle.assignments', period_id=period.id) }}">Kembali</a></div></div>
+{% if period.status in ('CLOSED','FINALIZED') %}<div class="alert alert-info">Periode sudah ditutup; target dan bobot tidak dapat diubah.</div>{% endif %}
+<form method="post" class="panel mb-3"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<table class="table align-middle"><thead><tr><th>KPI</th><th>Tipe</th><th>Satuan</th><th style="width:150px">Target</th><th style="width:110px">Bobot %</th><th></th></tr></thead><tbody>
+{% for a in items %}<tr><td>{{ a.kpi_name_snapshot }}<input type="hidden" name="id" value="{{ a.id }}"></td><td>{{ a.measurement_type_snapshot }}</td><td>{{ a.unit_snapshot or '-' }}</td>
+<td><input class="form-control form-control-sm" name="target_{{ a.id }}" value="{{ a.target|num }}" {{ 'disabled' if period.status in ('CLOSED','FINALIZED') }}></td>
+<td><input class="form-control form-control-sm" name="weight_{{ a.id }}" value="{{ a.weight|num }}" {{ 'disabled' if period.status in ('CLOSED','FINALIZED') }}></td>
+<td class="text-end">{% if period.status == 'DRAFT' %}<button class="btn btn-sm btn-outline-danger" form="rm{{ a.id }}">Hapus</button>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6"><div class="empty">Belum ada KPI.</div></td></tr>{% endfor %}
+<tr class="fw-semibold"><td colspan="4">Total bobot</td><td class="{{ 'text-success' if total == 100 else 'text-danger' }}">{{ total|num }}%</td><td></td></tr></tbody></table>
+{% if period.status in ('PUBLISHED','RUNNING') %}<div class="mb-3"><label class="form-label">Alasan perubahan (wajib, tercatat di audit log) *</label><input class="form-control" name="reason" required></div>{% endif %}
+{% if period.status not in ('CLOSED','FINALIZED') and items %}<button class="btn btn-primary">Simpan perubahan</button>{% endif %}</form>
+{% for a in items %}<form id="rm{{ a.id }}" method="post" data-confirm="Hapus KPI ini dari penugasan?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="remove"><input type="hidden" name="assignment_id" value="{{ a.id }}"></form>{% endfor %}
+{% if period.status == 'DRAFT' %}<form method="post" class="panel row g-2 align-items-end"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="add">
+<div class="col-md-5"><label class="form-label">Tambah KPI</label><select name="kpi_template_id" class="form-select">{% for t in avail %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select></div>
+<div class="col-md-3"><label class="form-label">Target</label><input name="target" class="form-control"></div><div class="col-md-2"><label class="form-label">Bobot %</label><input name="weight" class="form-control" required></div>
+<div class="col-md-2"><button class="btn btn-outline-primary w-100">Tambah</button></div></form>{% endif %}
+{% endblock %}

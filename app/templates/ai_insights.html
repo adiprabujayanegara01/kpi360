@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><div><h1>AI Insights</h1><div class="sub">Mode: {{ ('LLM · ' ~ model) if llm else 'ringkasan berbasis aturan (LLM tidak dikonfigurasi)' }}</div></div></div>
+<div class="alert alert-light border small"><b>Human-in-the-loop.</b> Insight AI tidak boleh menjadi satu-satunya dasar keputusan promosi, mutasi, atau penghentian kerja. Data yang dikirim ke LLM dianonimkan; angka pada bukti divalidasi terhadap database.</div>
+<form id="ai-form" class="panel row g-2 align-items-end mb-3"><div class="col-md-5"><label class="form-label">Karyawan</label><select name="employee_id" class="form-select">{% for e in emps %}<option value="{{ e.id }}">{{ e.name }} — {{ e.position.name if e.position }}</option>{% endfor %}</select></div>
+<div class="col-md-3"><label class="form-label">Periode</label><select name="period_id" class="form-select">{% for p in periods %}<option value="{{ p.id }}" {{ 'selected' if period and p.id == period.id }}>{{ p.name }}</option>{% endfor %}</select></div>
+<div class="col-md-2"><div class="form-check"><input class="form-check-input" type="checkbox" name="force" id="force"><label class="form-check-label" for="force">Buat ulang</label></div></div>
+<div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Analisis</button></div></form>
+<div id="ai-out"></div><div id="pred-out"></div>
+<div class="panel mt-3"><h2>Insight terbaru</h2>{% for i in recent %}<div class="py-2 border-bottom"><b>{{ i.employee.name }}</b> · {{ i.period.name }} · <span class="risk-{{ i.risk_level }}">{{ i.risk_level }}</span> <span class="ai-label">({{ i.source }}, {{ i.model_name }}, {{ i.prompt_version }})</span><div class="text-secondary">{{ i.summary }}</div></div>
+{% else %}<div class="empty">Belum ada insight. Pilih karyawan dan klik “Analisis”.</div>{% endfor %}</div>
+{% endblock %}

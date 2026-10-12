@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><h1>Notifikasi</h1><div class="acts"><form method="post" action="{{ url_for('main.notification_read_all') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-secondary">Tandai semua dibaca</button></form></div></div>
+<div class="panel p-0">{% for n in items %}<form method="post" action="{{ url_for('main.notification_read', nid=n.id) }}" class="m-0"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<button class="btn w-100 text-start border-0 border-bottom rounded-0 py-3 px-3 {{ '' if n.is_read else 'fw-semibold' }}" style="background:{{ 'transparent' if n.is_read else 'color-mix(in srgb,var(--k-primary) 7%,transparent)' }}">
+{{ n.title }}{% if n.body %}<div class="small text-secondary fw-normal">{{ n.body }}</div>{% endif %}<div class="small text-secondary fw-normal">{{ n.created_at|dt('%d %b %Y %H:%M') }}</div></button></form>
+{% else %}<div class="empty m-3">Tidak ada notifikasi.</div>{% endfor %}</div>
+{% endblock %}

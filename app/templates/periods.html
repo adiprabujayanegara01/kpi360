@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><div><h1>Periode penilaian</h1><div class="sub">Draft → Published → Running → Closed → Finalized</div></div>
+<div class="acts"><a class="btn btn-primary btn-sm" href="{{ url_for('cycle.period_form') }}">Buat periode</a></div></div>
+<div class="panel p-0 table-responsive"><table class="table mb-0 align-middle"><thead><tr><th>Periode</th><th>Rentang</th><th>Deadline input</th><th>Status</th><th>Penugasan</th><th>Pending</th><th>Aksi</th></tr></thead><tbody>
+{% for p in periods %}{% set s = stats[p.id] %}<tr><td><b>{{ p.name }}</b></td><td>{{ p.start_date|dt }} – {{ p.end_date|dt }}</td><td>{{ p.input_deadline|dt }}</td><td>{{ p.status|badge }}</td>
+<td>{{ s.assign }} KPI / {{ s.emps }} karyawan</td><td>{{ s.pending }}</td><td class="text-nowrap">
+{% macro act(a, label, cls='btn-outline-primary', confirm=None) %}<form class="d-inline" method="post" action="{{ url_for('cycle.period_action', id=p.id, action=a) }}" {% if confirm %}data-confirm="{{ confirm }}"{% endif %}><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm {{ cls }}">{{ label }}</button></form>{% endmacro %}
+{% if p.status == 'DRAFT' %}<a class="btn btn-sm btn-outline-secondary" href="{{ url_for('cycle.period_edit', id=p.id) }}">Ubah</a> <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('cycle.assignments', period_id=p.id) }}">Penugasan</a> {{ act('publish','Publish', 'btn-primary', 'Publish periode? Karyawan akan dinotifikasi.') }}
+{% elif p.status == 'PUBLISHED' %}{{ act('start','Mulai (Running)', 'btn-primary') }}
+{% elif p.status == 'RUNNING' %}{{ act('close','Tutup periode', 'btn-warning', 'Tutup periode? Input realisasi akan dihentikan.') }}
+{% elif p.status == 'CLOSED' %}{{ act('calculate','Hitung skor') }} {{ act('finalize','Finalisasi', 'btn-success', 'Finalisasi mengunci skor secara permanen. Lanjutkan?') }}
+{% else %}<a class="btn btn-sm btn-outline-secondary" href="{{ url_for('perf.performance', period_id=p.id) }}">Lihat skor</a>{% endif %}</td></tr>
+{% else %}<tr><td colspan="7"><div class="empty">Belum ada periode. Buat periode pertama untuk memulai siklus KPI.</div></td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

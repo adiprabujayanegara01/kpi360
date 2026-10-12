@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% import "_m.html" as m %}
+{% block content %}
+<div class="page-h"><h1>{{ 'Feedback untuk saya' if employee_view else 'Evaluasi & feedback' }}</h1></div>
+{% if employee_view %}
+{% for f in items %}<div class="panel mb-3"><div class="small text-secondary">{{ f.period.name }} · {{ f.evaluator.display_name }} · {{ f.created_at|dt }}</div><p class="mb-1">{{ f.comment }}</p>{% if f.development_plan %}<p class="text-secondary mb-0">Rencana pengembangan: {{ f.development_plan }}</p>{% endif %}</div>
+{% else %}<div class="empty">Belum ada feedback dari atasan.</div>{% endfor %}
+{% else %}
+{{ m.period_filter(periods, period) }}
+<div class="panel p-0 table-responsive"><table class="table mb-0 align-middle"><thead><tr><th>Karyawan</th><th class="num">Skor</th><th>Kategori</th><th>Feedback</th><th></th></tr></thead><tbody>
+{% for e, sc, fb in members %}<tr><td><a href="{{ url_for('perf.performance_detail', employee_id=e.id) }}">{{ e.name }}</a></td><td class="num">{{ sc.total_score|n2 if sc else '-' }}</td><td>{{ cat_badge(sc.category) if sc else '-' }}</td><td>{{ fb }} catatan</td>
+<td class="text-end">{% if period %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('cycle.evaluation_new', employee_id=e.id, period_id=period.id) }}">Tulis evaluasi</a>{% endif %}</td></tr>
+{% else %}<tr><td colspan="5"><div class="empty">Tidak ada anggota tim.</div></td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% endblock %}

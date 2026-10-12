@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><div><h1>Template KPI · {{ pos.name }}</h1><div class="sub">Dipakai saat penugasan massal. Total bobot harus 100%.</div></div>
+<div class="acts"><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('master.positions_list') }}">Kembali</a></div></div>
+<div class="panel mb-3 p-0 table-responsive"><table class="table mb-0"><thead><tr><th>KPI</th><th>Tipe</th><th class="num">Bobot %</th><th class="num">Target</th><th></th></tr></thead><tbody>
+{% for l in links %}<tr><td>{{ l.template.name }}</td><td>{{ l.template.measurement_type }}</td><td class="num">{{ l.default_weight|num }}</td><td class="num">{{ (l.default_target if l.default_target is not none else l.template.default_target)|num }}</td>
+<td class="text-end"><form method="post" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="remove"><input type="hidden" name="link_id" value="{{ l.id }}"><button class="btn btn-sm btn-outline-danger">Hapus</button></form></td></tr>
+{% else %}<tr><td colspan="5"><div class="empty">Belum ada KPI pada jabatan ini.</div></td></tr>{% endfor %}
+<tr class="fw-semibold"><td colspan="2">Total</td><td class="num {{ 'text-success' if total == 100 else 'text-danger' }}">{{ total|num }}%</td><td colspan="2">{% if total != 100 %}<span class="text-danger small">Belum 100%</span>{% endif %}</td></tr></tbody></table></div>
+<form method="post" class="panel row g-2 align-items-end"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="add">
+<div class="col-md-5"><label class="form-label">KPI</label><select name="kpi_template_id" class="form-select" required>{% for t in avail %}<option value="{{ t.id }}">{{ t.name }} ({{ t.measurement_type }})</option>{% endfor %}</select></div>
+<div class="col-md-2"><label class="form-label">Bobot %</label><input name="default_weight" class="form-control" required></div>
+<div class="col-md-3"><label class="form-label">Target (opsional)</label><input name="default_target" class="form-control"></div>
+<div class="col-md-2"><button class="btn btn-primary w-100">Tambah KPI</button></div></form>
+{% endblock %}

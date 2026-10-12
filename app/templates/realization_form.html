@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-h"><div><h1>{{ a.kpi_name_snapshot }}</h1><div class="sub">{{ a.period.name }} · target {{ a.target|num }} {{ a.unit_snapshot or '' }} · bobot {{ a.weight|num }}% · tipe {{ a.measurement_type_snapshot }}</div></div>
+<div class="acts"><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('cycle.my_kpi', period_id=a.period_id) }}">Kembali</a></div></div>
+{% if r and r.verifications %}<div class="panel mb-3"><h2>Riwayat verifikasi</h2>{% for v in r.verifications %}<div class="py-1 border-bottom">{{ v.decision|badge }} <span class="small text-secondary">{{ v.verifier.display_name }} · {{ v.decided_at|dt('%d %b %Y %H:%M') }}</span>{% if v.comment %}<div>{{ v.comment }}</div>{% endif %}</div>{% endfor %}</div>{% endif %}
+<form method="post" enctype="multipart/form-data" class="panel" style="max-width:720px"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="mb-3"><label class="form-label" for="value">Realisasi{% if a.measurement_type_snapshot == 'BOOLEAN' %} (Ya/Tidak){% elif a.unit_snapshot %} ({{ a.unit_snapshot }}){% endif %}</label>
+{% if a.measurement_type_snapshot == 'BOOLEAN' %}<select class="form-select" id="value" name="value" {{ 'disabled' if not can_edit }}><option value="1" {{ 'selected' if r and r.realization_value == 1 }}>Ya</option><option value="0" {{ 'selected' if r and r.realization_value is not none and r.realization_value == 0 }}>Tidak</option></select>
+{% else %}<input class="form-control" id="value" name="value" inputmode="decimal" value="{{ r.realization_value|num if r and r.realization_value is not none else '' }}" {{ 'disabled' if not can_edit else 'required' }}>{% endif %}
+{% if a.measurement_type_snapshot == 'LOWER' %}<div class="form-text">Semakin rendah semakin baik.</div>{% endif %}</div>
+<div class="mb-3"><label class="form-label" for="description">Deskripsi pencapaian</label><textarea class="form-control" rows="3" id="description" name="description" {{ 'disabled' if not can_edit }}>{{ r.description if r and r.description else '' }}</textarea></div>
+{% if r and r.evidence %}<div class="mb-3"><div class="form-label">Bukti terunggah</div>{% for e in r.evidence %}<div><a href="{{ url_for('main.evidence', eid=e.id) }}">{{ e.original_name }}</a> <span class="small text-secondary">({{ (e.size_bytes/1024)|round|int }} KB)</span></div>{% endfor %}</div>{% endif %}
+{% if can_edit %}<div class="mb-3"><label class="form-label" for="evidence">Unggah bukti{% if a.evidence_required_snapshot %} (wajib){% endif %}</label><input class="form-control" type="file" id="evidence" name="evidence" multiple data-maxmb="5" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.csv"><div class="form-text">PDF, PNG, JPG, XLSX, CSV · maks. 5 MB per file.</div></div>
+<div class="d-flex gap-2"><button class="btn btn-outline-primary" name="action" value="save">Simpan draft</button><button class="btn btn-primary" name="action" value="submit" data-confirm="Kirim ke atasan? Data tidak dapat diubah sampai diverifikasi.">Kirim untuk verifikasi</button></div>
+{% else %}<div class="alert alert-info mb-0">Realisasi ini tidak dapat diubah (status: {{ r.status if r else 'periode tidak aktif' }}).</div>{% endif %}</form>
+{% endblock %}
